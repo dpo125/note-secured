@@ -24,24 +24,16 @@ const noteReducer = (state, action) => {
       return { ...state, loading: false, notes: action.payload };
 
     case "ADD_NOTE_SUCCESS":
-      return {
-        ...state,
-        loading: false,
-        notes: [...state.notes, action.payload],
-      };
+      return { ...state, loading: false, notes: [...state.notes, action.payload] };
 
     case "DELETE_NOTE_SUCCESS":
-      return {
-        ...state,
-        loading: false,
-        notes: state.notes.filter((note) => note._id !== action.payload),
-      };
+      return { ...state, loading: false, notes: state.notes.filter(note => note._id !== action.payload) };
 
     case "EDIT_NOTE_SUCCESS":
       return {
         ...state,
         loading: false,
-        notes: state.notes.map((note) =>
+        notes: state.notes.map(note =>
           note._id === action.payload.id
             ? { ...note, title: action.payload.title, description: action.payload.description, tag: action.payload.tag }
             : note
@@ -58,15 +50,18 @@ const noteReducer = (state, action) => {
 
 const NoteState = (props) => {
   const [state, dispatch] = useReducer(noteReducer, initialState);
-const host = "/api";
-  // ⚠️ Hardcoded tokens are insecure – move to environment variables or use proper authentication flow
-  const authToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoiNjlhNTJmY2Q1NGMzZDM4ZTgyOWIyZTNkIn0sImlhdCI6MTc3MjQzMzM1NywiZXhwIjoxNzczMDM4MTU3fQ.bnubmftRZKjucrU4-2FoHnLhbnpZSrqw-p6rl6p0Siw";
+
+  // ✅ Host from environment variable (works local + Vercel)
+  const host = import.meta.env.VITE_API_BASE_URL;
+
+  // ✅ Auth token from localStorage (do NOT hardcode)
+  const authToken = localStorage.getItem("token");
 
   // Get all notes
   const getNotes = async () => {
     dispatch({ type: "FETCH_NOTES_START" });
     try {
-      const response = await fetch(`${host}/api/notes/fetchallnotes`, {
+      const response = await fetch(`${host}/notes/fetchallnotes`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -84,7 +79,7 @@ const host = "/api";
   const addNote = async (title, description, tag) => {
     dispatch({ type: "ADD_NOTE_START" });
     try {
-      const response = await fetch(`${host}/api/notes/addnote`, {
+      const response = await fetch(`${host}/notes/addnote`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -103,14 +98,13 @@ const host = "/api";
   const deleteNote = async (id) => {
     dispatch({ type: "DELETE_NOTE_START" });
     try {
-      const response = await fetch(`${host}/api/notes/deletenote/${id}`, {
+      await fetch(`${host}/notes/deletenote/${id}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
           "auth-token": authToken,
         },
       });
-      await response.json();
       dispatch({ type: "DELETE_NOTE_SUCCESS", payload: id });
     } catch (error) {
       dispatch({ type: "OPERATION_FAILURE", payload: error.message });
@@ -121,7 +115,7 @@ const host = "/api";
   const editNote = async (id, title, description, tag) => {
     dispatch({ type: "EDIT_NOTE_START" });
     try {
-      const response = await fetch(`${host}/api/notes/updatenote/${id}`, {
+      await fetch(`${host}/notes/updatenote/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -129,27 +123,21 @@ const host = "/api";
         },
         body: JSON.stringify({ title, description, tag }),
       });
-      await response.json();
-      dispatch({
-        type: "EDIT_NOTE_SUCCESS",
-        payload: { id, title, description, tag },
-      });
+      dispatch({ type: "EDIT_NOTE_SUCCESS", payload: { id, title, description, tag } });
     } catch (error) {
       dispatch({ type: "OPERATION_FAILURE", payload: error.message });
     }
   };
 
-  // 🔍 Search notes
+  // Search notes
   const searchNotes = async (query) => {
-    // If query is empty, just reload all notes
     if (!query || query.trim() === "") {
       getNotes();
       return;
     }
-
     dispatch({ type: "SEARCH_NOTES_START" });
     try {
-      const response = await fetch(`${host}/api/notes/search?q=${encodeURIComponent(query)}`, {
+      const response = await fetch(`${host}/notes/search?q=${encodeURIComponent(query)}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -173,7 +161,7 @@ const host = "/api";
         addNote,
         deleteNote,
         editNote,
-        searchNotes,   
+        searchNotes,
       }}
     >
       {props.children}
