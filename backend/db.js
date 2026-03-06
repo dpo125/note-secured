@@ -1,19 +1,21 @@
 require('dotenv').config();
 const mongoose = require('mongoose');
 
-
-const mongoURI = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/inotebook";
+// Use MongoDB Atlas URI in production, fallback to localhost in dev
+const mongoURI = process.env.MONGO_URI;
 
 const connectToMongo = async () => {
+  if (!mongoURI) {
+    console.error("❌ MONGO_URI not set in environment variables!");
+    process.exit(1);
+  }
+
   try {
-    await mongoose.connect(mongoURI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    await mongoose.connect(mongoURI); 
     console.log("✅ Connected to MongoDB");
   } catch (err) {
     console.error("❌ MongoDB connection error:", err);
-    process.exit(1); // Stop server if DB fails
+    process.exit(1); 
   }
 };
 
