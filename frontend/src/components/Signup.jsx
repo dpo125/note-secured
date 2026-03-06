@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+// ✅ Use env variable for API URL
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
 const Signup = () => {
   const navigate = useNavigate();
 
@@ -24,12 +27,14 @@ const Signup = () => {
     setLoading(true);
     setError("");
 
+    // ✅ Passwords match check
     if (credentials.password !== credentials.confirmPassword) {
       setError("Passwords don't match!");
       setLoading(false);
       return;
     }
 
+    // ✅ Terms agreement check
     if (!agreeTerms) {
       setError("Please agree to the terms and conditions");
       setLoading(false);
@@ -37,21 +42,30 @@ const Signup = () => {
     }
 
     try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: credentials.email, password: credentials.password }),
-    });
+      // ✅ Fetch request to backend
+      const response = await fetch(`${API_URL}/api/auth/createuser`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: credentials.name.trim(),
+          email: credentials.email.trim().toLowerCase(),
+          password: credentials.password.trim()
+        })
+      });
 
       const json = await response.json();
 
       if (json.success) {
-        localStorage.setItem('auth-token', json.authtoken);
+        // ✅ Save the correct token from backend
+        localStorage.setItem("auth-token", json.authToken);
+
         alert("Account created successfully! 🎉");
-        navigate('/');
+
+        navigate("/"); // Redirect to homepage after signup
       } else {
         setError(json.error || "Signup failed! Please try again.");
       }
+
     } catch (err) {
       setError("Network error! Please check your connection.");
       console.error("Signup error:", err);

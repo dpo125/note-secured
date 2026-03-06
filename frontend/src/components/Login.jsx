@@ -1,9 +1,12 @@
-import React, { useState } from 'react'; 
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+
+// ✅ Use env variable for API URL
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 const Login = () => {
   const navigate = useNavigate();
-  
+
   const [credentials, setCredentials] = useState({ email: "", password: "" });
   const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -12,7 +15,7 @@ const Login = () => {
 
   const onChange = (e) => {
     setCredentials({ ...credentials, [e.target.name]: e.target.value });
-    setError(""); 
+    setError("");
     setSuccess("");
   };
 
@@ -23,47 +26,47 @@ const Login = () => {
     setSuccess("");
 
     try {
-        // Send trimmed and lowercase email, trimmed password
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/login`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ 
-                email: credentials.email.trim().toLowerCase(), 
-                password: credentials.password.trim() 
-            }),
-        });
+      // ✅ Send trimmed email & password
+      const response = await fetch(`${API_URL}/api/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: credentials.email.trim().toLowerCase(),
+          password: credentials.password.trim()
+        })
+      });
 
-        const json = await response.json();
+      const json = await response.json();
 
-        if (json.authToken || json.authtoken) {
-            const token = json.authToken || json.authtoken;
+      if (json.authToken || json.authtoken) {
+        const token = json.authToken || json.authtoken;
 
-            // Remember me: localStorage or sessionStorage
-            if (rememberMe) {
-                localStorage.setItem('auth-token', token);
-            } else {
-                sessionStorage.setItem('auth-token', token);
-            }
-
-            setSuccess("Login successful! 🎉");
-
-            setTimeout(() => {
-                navigate('/');
-            }, 1000);
+        // ✅ Remember me: localStorage or sessionStorage
+        if (rememberMe) {
+          localStorage.setItem('auth-token', token);
         } else {
-            setError(json.error || "Invalid credentials");
+          sessionStorage.setItem('auth-token', token);
         }
+
+        setSuccess("Login successful! 🎉");
+
+        setTimeout(() => {
+          navigate('/');
+        }, 1000);
+      } else {
+        setError(json.error || "Invalid credentials");
+      }
     } catch (err) {
-        setError("Network error! Please try again.");
-        console.error("Login error:", err);
+      setError("Network error! Please try again.");
+      console.error("Login error:", err);
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
   };
 
   return (
     <div className="container d-flex justify-content-center align-items-center min-vh-100">
-      <div 
+      <div
         className="card shadow-lg rounded p-4"
         style={{
           width: "100%",
@@ -76,7 +79,7 @@ const Login = () => {
       >
         {/* Header */}
         <div className="text-center mb-4">
-          <h2 
+          <h2
             className="fw-bold"
             style={{
               background: "linear-gradient(45deg, #FF6A88, #FF99AC)",

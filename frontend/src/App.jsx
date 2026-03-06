@@ -14,7 +14,7 @@ function App() {
       <NoteState>
         <Router>
           <Navbar />
-          <Alert message="This is amazing react course"/>
+          <Alert message="This is amazing react app"/>
           <div className="container">
           <Routes>
             <Route path="/" element={<Home />} />

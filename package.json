@@ -19,12 +19,9 @@
     "react-icons": "^5.5.0",
     "react-router-dom": "^6.8.0"
   },
-  "scripts": {
-    "start": "concurrently \"npm run backend\" \"npm run frontend\"",
-    "backend": "nodemon backend/index.js",
-    "frontend": "npm run dev --prefix frontend",
-    "both": "concurrently \"npm run start\" \"nodemon backend/index.js\""
-  },
+ "scripts": {
+  "start": "node backend/index.js"
+},
   "author": "Abdullah",
   "license": "ISC"
 }
